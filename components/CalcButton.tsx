@@ -17,7 +17,7 @@ const CalcButton = ({ label, onPress, style, textStyle, styles }: any) => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      onPress(); // Gọi hàm xử lý sau animation
+      onPress();
     });
   };
 

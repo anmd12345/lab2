@@ -1,11 +1,9 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { evaluate } from "mathjs";
 import { themes, ThemeType } from '../../themes/CustomTheme';
 import { Audio } from 'expo-av';
-import { Animated } from 'react-native';
-import { useRef } from 'react';
 
 const CalcButton = ({ label, onPress, theme }: any) => (
   <TouchableOpacity
@@ -39,16 +37,33 @@ export default function App() {
     } else if (value === '=') {
       try {
         if (!expression.trim()) {
-          Alert.alert('Error', 'Please enter an expression!');
+          Alert.alert('Đã xảy ra lỗi!', 'Vui lòng nhập một biểu thức!');
           return;
         }
-        const evalResult = evaluate(expression);
+
+        const processedExpression = expression
+          .replace(/√/g, 'sqrt')
+          .replace(/Ans/g, result);
+
+        const evalResult = evaluate(processedExpression);
         const resStr = evalResult.toString();
         setResult(resStr);
         setHistory([{ key: Date.now().toString(), value: `${expression} = ${resStr}` }, ...history]);
       } catch {
-        setResult('Error');
+        setResult('Lỗi');
       }
+    } else if (value === 'π') {
+      setExpression(prev => prev + 'π');
+    } else if (value === 'e') {
+      setExpression(prev => prev + 'e');
+    } else if (value === 'e^x') {
+      setExpression(prev => prev + 'e^(');
+    } else if (value === 'sin' || value === 'cos' || value === 'tan' || value === 'log' || value === 'ln' || value === '√') {
+      setExpression(prev => prev + value + '(');
+    } else if (value === '%') {
+      setExpression(prev => prev + '/100');
+    } else if (value === 'Ans') {
+      setExpression(prev => prev + 'Ans');
     } else {
       setExpression(prev => prev + value);
     }
@@ -67,17 +82,19 @@ export default function App() {
     const currentIndex = themeList.indexOf(themeType);
     setThemeType(themeList[(currentIndex + 1) % themeList.length]);
   };
-
   const buttons = [
-    ['7', '8', '9', '/'],
-    ['4', '5', '6', '*'],
-    ['1', '2', '3', '-'],
-    ['0', '.', '=', '+'],
-    ['DEL', 'C']
+    ['sin', 'cos', 'tan', 'π'],
+    ['ln', 'log', '√', '^'],
+    ['(', ')', '%', '/'],
+    ['7', '8', '9', '*'],
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['0', '.', '=', 'DEL'],
+    ['C', 'e', 'e^x', 'Ans']
   ];
-
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView  style={{ flex: 1 }}>
+      <ScrollView>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.switchContainer}>
           <TouchableOpacity onPress={switchTheme}>
@@ -137,6 +154,7 @@ export default function App() {
           />
         </View>
       </View>
+    </ScrollView>
     </GestureHandlerRootView>
   );
 }
